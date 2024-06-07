@@ -3507,7 +3507,7 @@ sub print_person
 				$bio .= '.';
 				$end_of_sentence = 1;
 				push @phrases, $phrase;
-				$bio_dt->append(conjunction(map { my $tmp = $_->as_string(); $tmp =~ s/\.+$//; return $tmp } @phrases))->append('.');
+				$bio_dt->append(conjunction(map { $_->as_string() } @phrases))->append('.'); # JAY
 				$phrase = Data::Text->new();
 				@phrases = ();
 			}
@@ -12559,7 +12559,7 @@ sub datecmp($$)
 	return 0 if($left eq $right);
 
 	if(!ref($left)) {
-		if(($left =~ /^bef/i) || ($left =~ /^aft/i)) {
+		if($left =~ /^(bef|aft)/i) {
 			if($right =~ /^\d+$/) {
 				# For example, comparing bef 1 Jun 1965 <=> 1939
 				if($left =~ /\s(\d+)$/) {
