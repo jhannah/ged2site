@@ -3507,7 +3507,7 @@ sub print_person
 				$bio .= '.';
 				$end_of_sentence = 1;
 				push @phrases, $phrase;
-				$bio_dt->append(conjunction(map { $_->as_string() } @phrases))->append('.');
+				$bio_dt->append(conjunction(map { my $tmp = $_->as_string(); $tmp =~ s/\.+$//; return $tmp } @phrases))->append('.');
 				$phrase = Data::Text->new();
 				@phrases = ();
 			}
