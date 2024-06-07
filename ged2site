@@ -7329,7 +7329,7 @@ sub print_person
 				push @phrases, $phrase;
 			}
 			if(scalar(@phrases)) {
-				$bio_dt->append(conjunction(map { $_->as_string() } @phrases))->append('.');
+				$bio_dt->append(conjunction(map { my $tmp = $_->as_string(); $tmp =~ s/\.+$//; return $tmp } @phrases))->append('.');
 				$phrase = Data::Text->new();
 				@phrases = ();
 			}
@@ -7532,7 +7532,7 @@ sub print_person
 		push @phrases, $phrase;
 	}
 	if(scalar(@phrases)) {
-		$bio_dt->append(conjunction(map { $_->as_string() } @phrases))->append('.');
+		$bio_dt->append(conjunction(map { my $tmp = $_->as_string(); $tmp =~ s/\.+$//; return $tmp } @phrases))->append('.');
 		$phrase = undef;
 		@phrases = ();
 	}
@@ -13846,6 +13846,7 @@ sub wide_to_html
 		while((my @call_details = caller($i++))) {
 			print STDERR "\t", colored($call_details[2] . ' of ' . $call_details[1], 'red'), "\n";
 		}
+		return "";
 		die 'BUG: string not set';
 	}
 
@@ -14033,6 +14034,7 @@ sub wide_to_xml
 		while((my @call_details = caller($i++))) {
 			print STDERR "\t", colored($call_details[2] . ' of ' . $call_details[1], 'red'), "\n";
 		}
+		return "";
 		die 'BUG: string not set';
 	}
 
