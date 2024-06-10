@@ -1799,9 +1799,10 @@ sub print_person
 	# $fetcher = Data::Fetch->new();	# Throw away old values from the cache
 
 	my $dateofbirth;
+	my $is_alive = is_alive(person => $person);
 
 	# https://github.com/nigelhorne/ged2site/compare/master...jhannah:ged2site:115-bday-of-living-is-private?expand=1
-	if(!is_alive($person)) {
+	if(!$is_alive) {
 		$dateofbirth = dateofbirth($person);
 	}
 
