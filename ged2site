@@ -984,7 +984,7 @@ print $xml "\t$string";
 ########
 my $name;
 if($me) {
-	$name = 'of ' . $me->as_string(nee => 1);  # nee: Born, used to denote a woman's maiden name (e.g., Anne Gibson nee West)
+	$name = 'of ' . $me->as_string(nee => 1);
 } else {
 	$name = 'on this site';
 }
@@ -11933,11 +11933,6 @@ sub make_filename_from_person
 		die "$rc.html";
 	}
 
-	# How the heck is nee slipping in here sometimes?? Get rid of it.
-	#   nee: Born, used to denote a woman's maiden name (e.g., Anne Gibson nee West)
-	# We need to re-grab just the maiden name:
-	$rc =~ s/\w+-\(nee-(\w+)\)/$1/;
-	# say "JAY21 after  $rc";
 	return "$rc.html";
 }
 
@@ -13000,12 +12995,6 @@ sub dateofbirth {   # JAY
 	}
 
 	my $person = $params{'person'};
-	# p $person;
-	# sleep 30;
-	# say "JAY2 \$person is a " . ref($person);  # Gedcom::Individual or Class::Simple::Readonly::Cached
-	# if(is_alive(person => $person)) {
-	# 	return "PRIVATE";
-	# }
 
 	my @d = get_value({ person => $person, value => 'birth date' });
 	my $dateofbirth;
