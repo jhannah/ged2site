@@ -984,7 +984,7 @@ print $xml "\t$string";
 ########
 my $name;
 if($me) {
-	$name = 'of ' . $me->as_string(nee => 1);
+	$name = 'of ' . $me->as_string(nee => 1);  # nee: Born, used to denote a woman's maiden name (e.g., Anne Gibson nee West)
 } else {
 	$name = 'on this site';
 }
@@ -11933,6 +11933,10 @@ sub make_filename_from_person
 		die "$rc.html";
 	}
 
+	# How the heck is nee slipping in here sometimes?? Get rid of it.
+	# nee: Born, used to denote a woman's maiden name (e.g., Anne Gibson nee West)
+	$rc =~ s/-\(nee.*\)//;
+	# say "JAY21 after  $rc";
 	return "$rc.html";
 }
 
