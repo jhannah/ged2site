@@ -1526,6 +1526,7 @@ if($opts{'w'}) {
 	my $index = 1;
 
 	foreach my $person(@everyone) {
+		# say "JAY1 \$person is a " . ref($person);
 		if($person->{'warnings'}) {
 			print $html '<h2>',
 				'<a href="', make_filename_from_person(person => $person), '">',
@@ -1793,6 +1794,7 @@ sub print_person
 
 	# Gather the information on this person
 	my $person = $params{'person'};
+	# say "JAY10 \$person is a " . ref($person);
 
 	# $fetcher = Data::Fetch->new();	# Throw away old values from the cache
 
@@ -1974,13 +1976,12 @@ sub print_person
 		}
 	}
 
-	my $is_alive = is_alive(person => $person);
 	my $title;
 	if($is_alive && !$opts{'l'}) {
 		print $csv $person->xref(), '!', $person->given_names(), '!';
 			# $person->as_string({ middle_names => 1, title => 1 }), '!';
 		$title = wide_to_html($firstname);
-	} else {
+	} else {  # JAY
 		$title = wide_to_html($person->as_string({
 			include_years => 1,
 			nee => 1,
@@ -11352,7 +11353,7 @@ sub person_line_html
 
 	my $person = $params{'person'};
 
-	if($opts{'l'} || !is_alive(%params)) {
+	if(!is_alive(%params)) {
 		if(my $dob = dateofbirth($person)) {
 			return '<a href="' . make_filename_from_person(person => $person) . '">' .
 				wide_to_html($person->given_names()) .
@@ -11710,29 +11711,29 @@ sub print_graphviz
 	my $label;
 	my $dob;
 	my $dod;
-	if($is_alive && !$opts{'l'}) {
-		$label = 'Living';
-	} else {
-		# We're using UTF-8 for the graphviz encoding
 
-		# https://github.com/nigelhorne/ged2site/issues/117
-		# $label = wide_to_html($person->as_string());
-		$label = HTML::Entities::decode($person->as_string());
+	# We're using UTF-8 for the graphviz encoding
 
-		# Fields which HTML::Entities doesn't decode
-		$label =~ s/\N{U+00E4}/ä/g;
-		$label =~ s/\xc3\xa4/ä/g;
-		$label =~ s/\N{U+010D}/č/g;
-		$label =~ s/\xc4\x8d/č/g;
-		$label =~ s/\N{U+0160}/Š/g;
-		$label =~ s/\xc5\xa0/Š/g;
-		$label =~ s/\N{U+0161}/š/g;
-		$label =~ s/\xc5\xa1/š/g;
-		$label =~ s/\xc5\xbe/ž/g;
-		$label =~ s/\N{U+017E}/ž/g;
+	# https://github.com/nigelhorne/ged2site/issues/117
+	# $label = wide_to_html($person->as_string());
+	$label = HTML::Entities::decode($person->as_string());
 
-		$dob = dateofbirth($person);
-		$dod = dateofdeath($person);
+	# Fields which HTML::Entities doesn't decode
+	$label =~ s/\N{U+00E4}/ä/g;
+	$label =~ s/\xc3\xa4/ä/g;
+	$label =~ s/\N{U+010D}/č/g;
+	$label =~ s/\xc4\x8d/č/g;
+	$label =~ s/\N{U+0160}/Š/g;
+	$label =~ s/\xc5\xa0/Š/g;
+	$label =~ s/\N{U+0161}/š/g;
+	$label =~ s/\xc5\xa1/š/g;
+	$label =~ s/\xc5\xbe/ž/g;
+	$label =~ s/\N{U+017E}/ž/g;
+
+	$dod = dateofdeath($person);
+	$dob = dateofbirth($person);
+	if ($is_alive) {
+		undef $dob;
 	}
 
 	my $thumbnail;
@@ -11817,7 +11818,7 @@ sub must_predate
 	}
 }
 
-sub is_alive
+sub is_alive   # JAY
 {
 	my %params;
 
@@ -12980,8 +12981,9 @@ sub Geo::Coder::OpenCage::ua {
 	# }
 	return $self->{ua};
 }
+use Data::Printer;
 
-sub dateofbirth {
+sub dateofbirth {   # JAY
 	my %params;
 
 	if(ref($_[0]) eq 'HASH') {
@@ -12993,6 +12995,12 @@ sub dateofbirth {
 	}
 
 	my $person = $params{'person'};
+	# p $person;
+	# sleep 30;
+	# say "JAY2 \$person is a " . ref($person);  # Gedcom::Individual or Class::Simple::Readonly::Cached
+	# if(is_alive(person => $person)) {
+	# 	return "PRIVATE";
+	# }
 
 	my @d = get_value({ person => $person, value => 'birth date' });
 	my $dateofbirth;
