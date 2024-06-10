@@ -11934,8 +11934,9 @@ sub make_filename_from_person
 	}
 
 	# How the heck is nee slipping in here sometimes?? Get rid of it.
-	# nee: Born, used to denote a woman's maiden name (e.g., Anne Gibson nee West)
-	$rc =~ s/-\(nee.*\)//;
+	#   nee: Born, used to denote a woman's maiden name (e.g., Anne Gibson nee West)
+	# We need to re-grab just the maiden name:
+	$rc =~ s/\w+-\(nee-(\w+)\)/$1/;
 	# say "JAY21 after  $rc";
 	return "$rc.html";
 }
