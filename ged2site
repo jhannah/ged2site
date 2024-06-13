@@ -7563,7 +7563,7 @@ sub print_person
 		push @phrases, $phrase;
 	}
 	if(scalar(@phrases)) {
-		$bio_dt->append(conjunction(map { $_->as_string() } @phrases))->append('.');
+		$bio_dt->append(conjunction(map { my $tmp = $_->as_string(); $tmp =~ s/\.+$//; $tmp } @phrases))->append('.');
 		$phrase = undef;
 		@phrases = ();
 	}
