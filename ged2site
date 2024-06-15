@@ -1383,6 +1383,7 @@ close $csv;
 print "Creating surname database\n";
 open(my $html, '>', 'static-site/surnames.html');
 print $html "<html><head><title>Surnames in the Family Tree $html_name</title>",
+	"<meta charset='utf-8'>",
 	"</head><body><center><h1>Surnames in the Family Tree $html_name</h1>";
 if($me) {
 	print $html '[ <a href="', make_filename_from_person(person => $me), '">Home</a> ] | ';
@@ -1427,6 +1428,7 @@ foreach my $surname(sort keys %{$surnames}) {
 
 	open(my $shtml, '>', "static-site/$filename.html");
 	print $shtml "<html><head><title>The Family Tree $html_name - $surname</title>",
+		'<meta charset="utf-8">',
 		'</head>',
 		"<body><center><h1>The Family Tree $html_name - $surname</h1>";
 	if($me) {
@@ -1729,7 +1731,8 @@ if($gedcal) {
 
 if(open(my $fout, '>', 'static-site/history.html')) {
 	print "Creating family history page\n";
-	print $fout "<html><head><title>Family History $html_name</title></head>",
+	print $fout "<html><head><title>Family History $html_name</title>",
+		"<meta charset='utf-8'></head>",
 		"<body><center><h1>Family History $html_name</h1>";
 	if($me) {
 		print $fout '[ <a href="', make_filename_from_person(person => $me), '">Home</a> ] | ';
@@ -2025,6 +2028,7 @@ sub print_person
 		my $name = wide_to_html($person->as_string(nee => 1));
 
 		print $index_html "<head><title>The Family Tree $name</title>",
+			'<meta charset="utf-8">',
 			'<meta http-equiv="Refresh" content="1;URL=', make_filename_from_person(person => $person), '">';
 		if(my $lang = $ENV{'LANG'}) {
 			$lang =~ s/\.UTF-8//;
@@ -2038,6 +2042,7 @@ sub print_person
 		print $csv '1!';
 	} else {
 		print $index_html "<head><title>The Family Tree $name</title>",
+			'<meta charset="utf-8">',
 			'<meta http-equiv="Refresh" content="1;URL=/history.html">',
 			'</head>',
 			"<body><h1>Family History</h1><a href=\"/history.html\">Family History</a></body>";
@@ -2051,7 +2056,8 @@ sub print_person
 		die "FIXME: ensure filenames are unique ($filename)";
 	}
 	open(my $html, '>', $filename);
-	print $html "<html><head><title>$title</title>";
+	print $html "<html><head><title>$title</title>",
+		"<meta charset='utf-8'>";
 	if($opts{'c'}) {
 		# TODO: This will be added even on pages without citations, it would be nice to avoid that
 		print $html '<link rel="stylesheet" href="https://genealogy.nigelhorne.com/css/web.css" type="text/css" media="screen">';
