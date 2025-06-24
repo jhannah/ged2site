@@ -2,7 +2,7 @@
     "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en">
 	<head>
-		<meta name="Copyright" content="Copyright (C) 2023 Nigel Horne">
+		<meta name="Copyright" content="Copyright (C) 2025 Nigel Horne">
 		[% IF graph == 'ageatdeath' %]
 			[% SET title = 'Adult Life Expectancy' %]
 		[% ELSIF graph == 'birthmonth' %]
@@ -31,12 +31,14 @@
 			[% SET title = 'Country of Birth' %]
 		[% ELSE %]
 			<link rel="stylesheet" href="/css/mobile.css" type="text/css" media="screen">
-			[% SET title = 'Choose a graph' %]
+			[% SET title = 'Choissisez un carte' %]
 		[% END %]
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>[% title %]</title>
+		<meta name="description" content="[% SiteTitle.join(' ') %] - Un site de Ged2Site">
 		[% IF datapoints %]
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js"></script>
+			<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js"></script> -->
+			<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 			<script type="text/javascript">
 
 			window.onload = function () {
@@ -181,7 +183,7 @@
 			<p>This graph only includes data from 5 year periods that contain at least 10 births.</p>
 		[% ELSIF graph == 'ageatfirstchild' || graph == 'ageatlastchild' %]
 			<div id="chartContainer" style="height: 300px; width: 100%;"></div>
-			<p>This graph only includes data when the year of births of parents and children are known.</p>
+			<p>This graph, which shows the trend of generation gaps over the years, only includes data when the year of births of parents and children are known.</p>
 			<p>This graph only includes data from 5 year periods that contain at least 5 births.</p>
 		[% ELSIF graph == 'percentagedying' %]
 			<div id="chartContainer" style="height: 300px; width: 100%;"></div>
@@ -195,9 +197,9 @@
 				These differences could cause anomolies.
 			</p>
 		[% ELSE %]
-			<h2>Choissisez un carte</h2>
+			<h1>Choissisez un carte</h1>
 			<center>
-				<a href="?page=graphs&graph=ageatdeath" class="myButton">Le moyen &acirc;ge &agrave; la mort</a><br><br>
+				<a href="?page=graphs&amp;graph=ageatdeath" class="myButton">Le moyen &acirc;ge &agrave; la mort</a><br><br>
 				<a href="?page=graphs&graph=birthmonth" class="myButton">Month of Birth</a><br><br>
 				<a href="?page=graphs&graph=marriagemonth" class="myButton">Month of Marriage</a><br><br>
 				<a href="?page=graphs&graph=deathmonth" class="myButton">Month of Death</a><br><br>
@@ -212,7 +214,7 @@
 			</center>
 		[% END %]
 		<center><font size="+2">
-			[ <a href="?page=people&home=1">Acceuil</a> ]<br>
+			[ <a href="?page=people&amp;home=1">Acceuil</a> ]<br>
 			[ <a href="?page=censuses">Index des Recensements</a> ]<br>
 			[ <a href="?page=surnames">Surname Index</a> ]<br>
 			[ <a href="?page=history">Family History</a> ]<br>
@@ -221,7 +223,7 @@
 		</font></center>
 		<p align="right">
 			<i>
-			Cette site web a &eacute;t&eacute; cr&eacute;&eacute; par <a href="https://github.com/nigelhorne/ged2site">ged2site</a>.
+			Cette site web a &eacute;t&eacute; cr&eacute;&eacute; par <a href="https://github.com/nigelhorne/ged2site">Ged2Site</a>.
 			[% IF updated %]
 				[% USE date %]
 				Derni&egrave;re modification le [% date.format(time = updated, format = '%d %b %Y', locale = lingua.language_code_alpha2) %]

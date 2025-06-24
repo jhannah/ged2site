@@ -2,132 +2,230 @@
 
 # ged2site
 
-Convert a Gedcom file to HTML to create a family tree website.
+Create a Stunning Family Tree Website from Your Gedcom File!
 
-An example genealogy website that was produced by ged2site is available
-at https://genealogy.nigelhorne.com.
+Turn your Gedcom file into a fully interactive family tree website with Ged2Site.
+This powerful tool transforms your genealogical data into a beautifully structured HTML site,
+making it easy to share your family history with others.
 
-This is quite complex software, so if you are a genealogist looking to create
-a website and aren't an IT guru,
-it would be better to e-mail me on `<njh at nigelhorne.com>` for professional help.
-If you contact me, please let me know the program you're using to create your
-Gedcom file, and the operating system you are using.
+Check out a live example of a genealogy website built with Ged2Site:
+[Nigel Horne's Family Tree](https://genealogy.nigelhorne.com).
 
-It's been tested more extensively with Gedcoms exported and downloaded from
+## Need Help?
+
+Ged2Site is a feature-rich and advanced tool, and while it’s designed to be accessible, setting up a genealogy website can be complex.
+If you’re a genealogist without an IT background, I’d be happy to assist you.
+Reach out to me at <njh at nigelhorne.com> for professional support.
+
+## Compatibility
+
+It's been extensively tested with Gedcoms exported and downloaded from
 FindMyPast and Family Tree Maker, though it should work fine with other systems
 such as GenesReunited and Ancestry.
+
+## Usage
 
 Typical usage:
 
     ged2site -cFdh 'Your Name' gedfile.ged
 
-You will then have two sites created in sub directories
+You will then have two sites created in sub-directories
 - static-site is static HTML (no CGI),
 - dynamic-site is a [VWF](//github.com/nigelhorne/vwf) based website which uses templates to support more than one
-language and present different content to mobile/web/search-engine clients. This is much more easily customisable
+language and present different content to mobile/web/search-engine clients.
+This allows for better SEO and a seamless experience on mobile as well as desktops
+in a multi-lingual environment.
+This is much more easily customisable
 by you to create the look and feel of the website that you want.
+The dynamic site contains more data visualisation such as trend analysis,
+time-lapse views and heatmaps in a visually appealing way.
 
-If you decide to use the static site, just copy files in the static-site directory to your web-server.
+## How to Use Ged2Site
 
-If you decide to use the dynamic site first create a $hostname.com file in the
-conf directory (use default as a template),
-then modify the contents of the template tree so that the site looks as you
-want it.
-The configuration file can be in any number of formats including INI and XML.
+To generate your family tree website, run the following command:
 
-    root_dir: /full/path/to/website directory
-    SiteTitle: The title of your website
-    memory_cache: where short-term volatile information is stored, such as the country of origin of the client
-    disc_cache: where long-term information is stored, such as copies of output to see if HTTP 304 can be returned
-    contact: your name and e-mail address
+    ged2site -cFdh 'Your Name' gedfile.ged
 
-Then upload the dynamic-site directory to your web-server.
-The databases are in CSV format. To speed up access you can convert to SQLite
-format using
-[csv2sqlite](http://search.cpan.org/~rwstauner/App-csv2sqlite/),
-which you should run on each of the .csv files.
+This will create two website versions in separate folders:
 
-    csv2sqlite -o sep_char='!' -o allow_loose_quotes=1 people.csv people.sql
+* static-site – A simple, no-frills HTML website that works without CGI.
+* dynamic-site – A more advanced website powered by [VWF](https://github.com/nigelhorne/vwf).
 
-Every time you upload a new site ensure that you remove the "save_to" directory and the disc cache,
-since they contain cached copies of pages that will be inconsistent with the new site.
+What’s the Difference?
+* Static Site:
+	* Basic HTML, easy to use, no extra setup required.
+* Dynamic Site:
+	* Supports multiple languages.
+	* Adapts content for mobile, web, and search engines.
+	* Improves SEO and user experience.
+	* Easier to customize for a unique look and feel.
+	* Includes data visualizations like trend analysis, time-lapse views, and heatmaps.
 
-Finally, for the dynamic site, set-up the logging, if you want any.  To do that modify the page.l4pconf file to taste.
+If you want a flexible, visually rich, and customizable family tree website, the dynamic site is the better option.
 
-## Installation and Pre-Requisites
+## **How to Publish Your Site**
 
-Ged2site uses many CPAN modules which it will try to install if they are not
-on your system.
-If it doesn't have the necessary privilege to install the modules it will
-fail on starting up with "permission denied" errors.
-This is most likely because you're not running as root
-(which is of course how it should be)
-and you're not using [local::lib](https://metacpan.org/pod/local::lib),
-or [Perlbrew](https://perlbrew.pl/).
+### **For the Static Site**
+If you're using the **static site**,
+simply **copy all files from the `static-site` directory** to your web server.
+No extra setup is needed.
 
-Running the program for the first time with no
-arguments should install them,
-of course that will fail if you don't have the privilege,
-in which case you'll need to add them by hand.
-To install by hand you'll either have to use local::lib or perlbrew.
-Of course you could also run ged2site as root,
-but I strongly advise you don't do that.
+### **For the Dynamic Site**
+If you prefer the **dynamic site**,
+follow these steps:
 
-You'll also need to install
-[Library](https://github.com/nigelhorne/lib) - library of code common with
-[gedcom](https://github.com/nigelhorne/gedcom).
+#### **1. Create a Configuration File**
+- Go to the `conf` directory and create a new file named after your website's hostname (e.g., `yourdomain.com`).
+- Use the `default` file as a template.
+- Update the configuration file with key details:
 
-On FreeBSD you'll need to
-"sudo pkg install pkgconf gdlib graphviz ImageMagick7;
-cd /usr/local/lib;
-sudo ln -s libMagick++-7.so libMagickCore-7.Q16HDRI.so"
+  ```
+  root_dir: /full/path/to/your/website
+  SiteTitle: Your Website Title
+  memory_cache: Stores short-term data like user locations
+  disc_cache: Stores long-term data for caching and performance
+  contact: Your Name and Email Address
+  ```
+
+#### **2. Customize the Site**
+Modify the **template files** to change the website’s design and layout to match your needs.
+
+#### **3. Upload to Your Web Server**
+Copy the entire `dynamic-site` directory to your web server.
+
+#### **4. Optimize Your Database (Optional)**
+The dynamic site stores data in **CSV files**, but for faster performance, you can **convert them to SQLite** using [`csv2sqlite`](http://search.cpan.org/~rwstauner/App-csv2sqlite/).
+
+Run this command on each CSV file:
+```
+csv2sqlite -o sep_char='!' -o allow_loose_quotes=1 people.csv people.sql
+```
+
+#### **5. Clear Old Cache**
+Before uploading a new version of your site, **delete the `save_to` directory and the disc cache** to remove outdated page copies.
+
+#### **6. Set Up Logging (Optional)**
+If you want logging, edit the `page.l4pconf` file to configure it to your needs.
+
+Once you've completed these steps, your **dynamic family tree website** will be live and optimized.
+
+## **Installing Dependencies for Ged2Site**
+
+### **Automatic Installation**
+Ged2Site relies on multiple **CPAN modules**.
+If they are missing, the program will attempt to **install them automatically** when you run it for the first time **without any arguments**
+and set the evironment variable BOOTSTRAP.
+
+
+```
+BOOTSTRAP=1 ged2site
+```
+
+However, this **may fail** with a "permission denied" error if:
+- You are **not running as root** (which is the correct and safer way).
+- You are **not using** tools like [local::lib](https://metacpan.org/pod/local::lib) or [Perlbrew](https://perlbrew.pl/).
+
+### **Manual Installation (If Automatic Installation Fails)**
+If the modules do not install automatically, you have three options:
+
+1. **Use `local::lib`** (Recommended)
+   - Set up `local::lib` by following [these instructions](https://metacpan.org/pod/local::lib).
+   - Install missing modules manually with CPAN:
+     ```
+     cpan install Module::Name
+     ```
+
+2. **Use Perlbrew**
+   - Install [Perlbrew](https://perlbrew.pl/) to manage your Perl environment.
+   - Install modules within your Perlbrew-managed environment.
+
+3. **Run Ged2Site as Root** (Not Recommended)
+   - You **can** run it as root, but this **is not advised** due to security risks.
+
+### **Alternative Installation Method (Experimental)**
+You can also try installing dependencies with:
+
+```
+cpan -i lazy && perl -Mlazy ged2site && perl -Mlazy dynamic-site/cgi-bin/page.cgi
+```
+
+**Note:** This method is **untested** and may not work.
+
+### **Installing Gedcom (Required for Calendars)**
+To enable calendar features on the **dynamic site**, you **must install Gedcom**:
+
+```
+git clone https://github.com/nigelhorne/gedcom.git
+cd gedcom
+perl Makefile.PL && make && make install
+```
+
+### **Additional Setup for FreeBSD**
+If you're using **FreeBSD**, install required packages and create symbolic links:
+
+```
+sudo pkg install pkgconf gdlib graphviz ImageMagick7
+cd /usr/local/lib
+sudo ln -s libMagick++-7.so libMagickCore-7.Q16HDRI.so
+```
+
+### **Final Check**
+Once dependencies are installed, **try running Ged2Site again**. If you still encounter issues, ensure your Perl environment is properly configured using `local::lib` or `Perlbrew`.
 
 ## Runtime Options
 
-The options to ged2site are:
+Ged2Site comes with various options that let you customize how your family tree website is generated.
+Here’s what each option does:
 
-| Flag | Meaning |
-| ---- | ------- |
-| -c   | Give citations |
-| -d   | Download copies of objects and media and include them on the generated website rather than link to them, useful if the objects are on pay sites such as FMP |
-| -f   | treat warnings as fatal, implies -w |
-| -F   | print a family tree (requires GraphViz) |
-| -g   | Generate Google verification file - see www.google.com/webmasters/verification Don't include the .html at the end of the code |
-| -h   | set the home person |
-| -l   | include living people |
-| -L n | Limit to n records |
-| -m   | Generate a Google map on each page showing events |
-| -J   | Google Maps JavaScript API key (used to display the map). Set the key's application restriction to website |
-| -G   | Google Maps geolocation API key (used to populate the map) |
-| -w   | print warning about inconsistent data - a sort of lint for Gedcom files, may not do as many as *[gedcom](//github.com/nigelhorne/gedcom)* |
-| -W   | don't colorize warning output |
-| -x f | Given a location of people.xml from a previous run, add to a blog of changes (TODO)
+### Command-Line Flags
 
-If [gedcom](https://github.com/nigelhorne/gedcom) is installed,
-ged2site will also create a calendar of births and deaths,
-one page for each month in the current year.
+| Flag | Description |
+| ---- | ----------- |
+| `-c` | Include citations in the output. |
+| `-d` | Download and embed media files (e.g., images, documents) instead of linking to them. This is useful for paid sites like FindMyPast (FMP). |
+| `-f` | Treat warnings as errors (stops execution if warnings occur). Implies `-w`. |
+| `-F` | Generate a graphical family tree (requires GraphViz). |
+| `-g` | Generate a Google verification file for search engine indexing. Enter the verification code **without** the `.html` extension. |
+| `-h` | Set the home (starting) person in the tree. |
+| `-l` | Include living people in the generated site. |
+| `-L n` | Limit the output to **n** records. |
+| `-m` | Add an interactive map to each page showing event locations. |
+| `-J` | Provide a Google Maps JavaScript API key for displaying maps. The key should have an application restriction for your website. If omitted, OpenStreetMaps is used. |
+| `-G` | Provide a Google Maps Geolocation API key for mapping event locations. |
+| `-w` | Enable warnings for inconsistent data (like a lint tool for Gedcom files). |
+| `-W` | Disable colorized warning output. |
+| `-x f` | Use a previous `people.xml` file to track changes and generate a blog (TODO feature). |
 
-Some of the options can be stored in *ged2site.conf*:
+### Important Notes
 
-| Flag | Meaning |
-| ---- | ------- |
-| -h   |  home |
-| -g   |  google_verification |
-| -G   |  google_maps_geolocation_key (also can be stored in the `GMAP_KEY` environment variable) |
-| -J   |  google_maps_javascript_key |
+- If you use the `-m` option (maps), **your Google API key will be included in the website’s code**. To protect it, restrict the key’s use to your host’s IP address.
+- By default, Ged2Site is designed to **protect the privacy of living individuals**.
 
-You can get free API keys from Google at https://console.developers.google.com/apis/credentials.
+### Additional Features
 
-ged2site also creates an XML file,
-people.xml,
-of parsed output which you can use in querying software,
-so it also works as a Gedcom to XML converter.
+- If [Gedcom](https://github.com/nigelhorne/gedcom) is installed, Ged2Site can generate a **calendar of births and deaths**, with a dedicated page for each month of the current year.
+- Ged2Site produces an **XML file (`people.xml`)** containing parsed output, which can be used in other genealogy software for queries. This means it also functions as a **Gedcom-to-XML converter**.
+
+### Configuration File (`ged2site.conf`)
+
+Some options can be stored in a configuration file instead of passing them every time in the command line:
+
+| Flag | Configuration Key |
+| ---- | ----------------- |
+| `-h` | `home` (home person) |
+| `-g` | `google_verification` (Google site verification) |
+| `-G` | `google_maps_geolocation_key` (can also be set via `GMAP_KEY` environment variable) |
+| `-J` | `google_maps_javascript_key` |
+
+### Getting API Keys
+
+To use Google Maps or site verification features, get free API keys from [Google API Console](https://console.developers.google.com/apis/credentials).
 
 ## Ancestry on Windows
 
-I use FindMyPast on Linux, because export of images is better on FMP and
+I use FindMyPast on Linux because the export of images is better on FMP and
 because Linux.  I recognise that many folks use Ancestry on Windows, so I
-have this rough guide which works for me, but understand that you'll still
+have this rough guide that works for me but understand that you'll still
 need to be an advanced Windows user, this is not for the Novice.  If you
 still need help, e-mail me or put an issue on github.com/nigelhorne/ged2site.
 
@@ -161,7 +259,7 @@ as input.
 I strongly suggest adding this to your .htaccess file:
 
 ```
-# disallow access to special directories and feed back a 404 error
+# disallow access to special directories and feedback a 404 error
 RedirectMatch 404 /\\.svn(/|$)
 RedirectMatch 404 /\\.git(/|$)
 
@@ -184,14 +282,16 @@ ExpiresByType text/javascript "access plus 1 day"
 
 ## Environment Variables
 
-For compatibility with other code, these environment variables are honoured:
+`Ged2Site` honours the following environment variables for improved compatibility:
 
-    BMAP_KEY: Bing (virtualearth.net) API Key
-    GEONAMES_USE: geonames.org registered username
-    GMAP_KEY: Google Places (maps.googleapis.com) API Key
-    LANG: some handling of en_GB and en_US translating between then, fr_FR is a work in progress
-    OPENADDR_HOME: directory of data from http://results.openaddresses.io/
-    REDIS_SERVER: ip:port pair of where to cache geo-coding data
+* BOOTSTRAP - Attempt to install the modules you need
+* BMAP_KEY - Bing (virtualearth.net) API Key
+* GEONAMES_USER - geonames.org registered username
+* GMAP_KEY - Google Places (maps.googleapis.com) API Key
+* LANG - some handling of en_GB and en_US translating between then, fr_FR is a work in progress
+* OPENADDR_HOME - directory of data from http -//results.openaddresses.io/
+* REDIS_SERVER - ip:port pair of where to cache geo-coding data
+* OPENAI_KEY - experimental: use the key from openai.com to enhance the text
 
 ## Debugging and Developing
 
@@ -210,6 +310,47 @@ site before you deploy. Be aware that you will also see debugging messages.
 To see the environment of the system to help with debugging
 
     https://localhost/cgi-bin/page.fcgi?page=meta-data
+
+Different people use different ways to format and enter information,
+ged2site goes out of its way to support all of these,
+such as different location and date formats.
+If your data shows issues with this aim, let me know.
+
+## Premium Support
+
+Premium support covers:
+
+### Consulting
+
+Expertise in setting up, customizing, and maintaining ged2site.
+
+### Training
+
+Paid training sessions, webinars, or workshops.
+
+### Technical Support
+
+Premium support plans with a guaranteed response time and direct assistance.
+
+### Family History Website
+
+Host your family history securely and beautifully.
+By sending your Gedcom, preserving your family’s legacy online has never been easier.
+Whether you're just starting your genealogy journey or managing a massive archive,
+just send your Gedcom and I'll do the rest.
+
+## **Ged2Site Licence Agreement**
+
+### **Personal Use:**
+Ged2Site is **free to use** for a **single individual** on **one computer** for **personal, non-commercial purposes only**.
+
+### **Restricted Use:**
+Any other use—including but not limited to **commercial, charitable, educational, or government organizations**—**requires a written license agreement**.
+
+### **License Application:**
+Organizations or individuals falling outside the personal-use terms **must request written permission** and obtain a license before using Ged2Site.
+
+For licensing enquiries, please contact: **< njh @ nigelhorne.com >**.
 
 ## Bugs
 
@@ -231,10 +372,35 @@ FTM or download from the other tree to your desktop and upload to your tree.
 There will be numerous strange handling of Gedcoms since it's not that tightly
 observed by websites.
 
-If you see lumpy English text in the output, or just plain mistakes,
+If you see lumpy English text in the output or just plain mistakes,
 please e-mail me or add a bug report to github.com/nigelhorne/ged2site.
 
 Profile pictures are not handled with output from Ancestry.  Findmypast is handled correctly.
+
+The storytelling format is hard coded, it would be useful if it were configurable.
+
+## XML File Generation
+
+Ged2Site generates an XML file for each individual in the database.
+These files are primarily used to create dynamic content for websites.
+However, in principle, they can be imported into any data viewing system that supports XML.
+
+### File Location
+
+The XML files are stored in the following directory:
+
+```
+.../dynamic_site/data/people/${xref}.XML
+```
+
+Each file is named based on the unique xref identifier assigned to the individual.
+
+### Usage
+
+The XML files enable dynamic content generation on websites.
+They can be parsed and imported into other data visualization or genealogy tools,
+the structured format allows easy integration with third-party systems.
+For further details on the XML structure and how to use these files, refer to the XML Schema Documentation or contact the Nigel Horne.
 
 ## Acknowledgements
 
@@ -256,16 +422,15 @@ Magnific Popup http://dimsemenov.com/plugins/magnific-popup/
 
 ## See Also
 
-* [gedcom](https://github.com/nigelhorne/gedcom) - a general purpose utility for Gedcom files
+* [gedcom](https://github.com/nigelhorne/gedcom) - a general-purpose utility for Gedcom files
 * [gedcmp](https://github.com/nigelhorne/gedcmp) - compare two Gedcoms
-* [lib](https://github.com/nigelhorne/lib) - library of routines used by this package
 * [The Perl-GEDCOM Mailing List](https://www.miskatonic.org/pg/) - dead mailing list, you can check the archives
 
 ## LICENSE AND COPYRIGHT
 
-Copyright 2015-2024 Nigel Horne.
+Copyright 2015-2025 Nigel Horne.
 
-This program is released under the following licence: GPL2 for personal use on
-a single computer.
-All other users (for example Commercial, Charity, Educational, Government)
-must apply in writing for a licence for use from Nigel Horne at `<njh at nigelhorne.com>`.
+## Support
+
+Please report any bugs or feature requests to the author.
+This module is provided as-is without any warranty.

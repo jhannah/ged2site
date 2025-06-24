@@ -24,6 +24,7 @@ our $dfn;
 #	Plot average (mean) distance between place of spouse's birth against year of marriage
 #	Distance betweeen parents' birth and death places and each child birth and death places (the coloured lines)
 #	Pie chart of categories of occupations
+#	Generation gaps: Measure the average age difference between parents and children
 
 our $mapper = {
 	'ageatdeath' => \&_ageatdeath,
@@ -42,13 +43,16 @@ our $mapper = {
 	'motherchildren' => \&_motherchildren,
 	'percentagedying' => \&_percentagedying,
 	'birth_countries' => \&_birth_countries,
-	'name_date' => \&_name_date,
+	'death_countries' => \&_death_countries,
+	'name_date_m' => \&_name_date_m,
+	'name_date_f' => \&_name_date_f,
 	'surname_date' => \&_surname_date,
 };
 
 # Call the correct routine from the "graphs" parameter using the "mapper" table
 #	and pass all that routine's return values to the graphs.tmpl file
-sub html {
+sub html
+{
 	my $self = shift;
 	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
@@ -132,7 +136,7 @@ sub _ageatdeathbysex
 			}
 			next if($yod < 1840);
 			my $age = $yod - $yob;
-			next if ($age < 20);
+			next if($age < 20);
 			$yod -= $yod % BUCKETYEARS;
 			if($counts{$yod}) {
 				$counts{$yod}++;
@@ -360,33 +364,63 @@ sub _infantdeaths
 	return { datapoints => $datapoints };
 }
 
+# Plot the time difference, in months, between the date of the first marriage and the birth date of the eldest child for everyone in the database.
+# The graph is a collection of data points representing the frequency of these time differences.
+# It's slow because it goes through all the entries in the database.
 sub _firstborn
 {
+	# Retrieve object instance and arguments
 	my $self = shift;
 	my $args = shift;
+
+	# Hash to store month differences and their frequencies
 	my %months;
 
+	# Log entry into the subroutine if a logger exists
+	if($self->{'logger'}) {
+		$self->{'logger'}->trace(__PACKAGE__, ': ', __LINE__, ': entering _firstborn()');
+	}
+
+	# Retrieve people data from arguments
 	my $people = $args->{'people'};
 
+	# Initialize DateTime::Format::Natural if not already initialized
 	$dfn ||= DateTime::Format::Natural->new();
+
+	# Variable to track the maximum month difference
 	my $max;
-	foreach my $person($people->selectall_hash()) {
+
+	# Iterate over all people records
+	foreach my $person ($people->selectall_hash()) {
+		# Proceed only if the person has children and marriage data
 		if($person->{'children'} && $person->{'marriages'}) {
+			# Extract the date of the first marriage
 			my $dom = $person->{'marriages'};
 			if($dom =~ /^(.+?)-/) {
-				$dom = $1;	# use the first marriage
+				$dom = $1;	# Use the first marriage
 			}
+
+			# Variable to track the eldest child
 			my $eldest;
-			CHILD: foreach my $child(split(/----/, $person->{'children'})) {
-				if($child =~ /page=people&entry=([IP]\d+)"/) {
+
+			# Process each child of the person
+			CHILD: foreach my $child (split(/----/, $person->{'children'})) {
+				# Extract the child's entry ID and fetch its details
+				if($child =~ /page=people&amp;entry=([IP]\d+)"/) {
 					$child = $people->fetchrow_hashref({ entry => $1 });
+
+					# Retrieve the date of birth of the child
 					my $dob = $child->{'dob'};
-					next CHILD unless($dob);
+					next CHILD unless ($dob);	# Skip if DOB is undefined
+
+					# Reformat the DOB to a standard format (DD/MM/YYYY)
 					if($dob =~ /^(\d{3,4})\/(\d{2})\/(\d{2})$/) {
 						$dob = "$3/$2/$1";
 					} else {
-						next CHILD;
+						next CHILD;	# Skip if DOB format is invalid
 					}
+
+					# Update the eldest child based on the earliest DOB
 					if(defined($eldest)) {
 						my $candidate = $self->_date_to_datetime($dob);
 						if($candidate < $eldest) {
@@ -397,10 +431,16 @@ sub _firstborn
 					}
 				}
 			}
+
+			# Calculate the difference in months if an eldest child exists
 			if(defined($eldest)) {
 				my $d = $eldest->subtract_datetime($self->_date_to_datetime($dom));
-				my $months = $d->months() + ($d->years() * 12) - 1;
+				my $months = $d->months() + ($d->years() * 12) - 1;	# Total months difference
+
+				# Update the frequency of this month difference
 				$months{$months}++;
+
+				# Track the maximum month difference
 				if((!defined($max)) || ($months > $max)) {
 					$max = $months;
 				}
@@ -408,9 +448,17 @@ sub _firstborn
 		}
 	}
 
-	my $datapoints;
+	if(!defined($max)) {
+		# "Can't happen" unless there's something wrong with the parser
+		if($self->{'logger'}) {
+			$self->{'logger'}->warn(__PACKAGE__, ': _firstborn(): ', __LINE__, ': max is undefined');
+		}
+		return { error => 'max is undefined' }
+	}
 
-	foreach my $month(0..$max) {
+	# Generate data points for each month difference from 0 to $max
+	my $datapoints;
+	foreach my $month (0 .. $max) {
 		if($months{$month}) {
 			$datapoints .= "{ label: \"$month\", y: $months{$month} },\n";
 		} else {
@@ -418,6 +466,7 @@ sub _firstborn
 		}
 	}
 
+	# Return the generated data points
 	return { datapoints => $datapoints };
 }
 
@@ -1102,7 +1151,27 @@ sub _birth_countries
 	my $self = shift;
 	my $args = shift;
 
-	my $json_file = File::Spec->catfile($args->{'databasedir'}, 'facts.json');
+	return $self->_build_countries($args->{'database_dir'}, 'birth_countries');
+}
+
+# Count of in which country folks were born
+# uses https://canvasjs.com/docs/charts/chart-types/html5-bar-chart/
+
+sub _death_countries
+{
+	my $self = shift;
+	my $args = shift;
+
+	return $self->_build_countries($args->{'database_dir'}, 'death_countries');
+}
+
+sub _build_countries
+{
+	my $self = shift;
+	my $database_dir = shift;
+	my $tag = shift;
+
+	my $json_file = File::Spec->catfile($database_dir, 'facts.json');
 
 	if(open(my $json, '<', $json_file)) {
 		my $facts = JSON::MaybeXS->new()->utf8()->decode(<$json>);
@@ -1114,14 +1183,14 @@ sub _birth_countries
 				Data::Dumper->new([$facts->{'mothers_side'}])->Dump());
 		}
 		my $mdata = "{\ntype: \"bar\",\ndataPoints: [\n";
-		if(my $m = $facts->{'mothers_side'}->{'birth_countries'}) {
+		if(my $m = $facts->{'mothers_side'}->{$tag}) {
 			foreach my $country (sort keys %{$m}) {
 				$mdata .= '{ y: ' . $m->{$country} . ", label: \"$country\"},\n";
 			}
 		}
 		$mdata .= "]\n}\n";
 		my $fdata = "{\ntype: \"bar\",\ndataPoints: [\n";
-		if(my $f = $facts->{'fathers_side'}->{'birth_countries'}) {
+		if(my $f = $facts->{'fathers_side'}->{$tag}) {
 			foreach my $country (sort keys %{$f}) {
 				$fdata .= '{ y: ' . $f->{$country} . ", label: \"$country\"},\n";
 			}
@@ -1133,13 +1202,22 @@ sub _birth_countries
 	return { error => "Can't open $json_file" };
 }
 
-# Show popularity of firstnames by quarter of a century
-sub _name_date
+# Show male popularity of firstnames by quarter of a century
+sub _name_date_m
 {
 	my $self = shift;
 	my $args = shift;
 
-	return { name_date => create_cloud($args->{'name_date'}) };
+	return { name_date => create_cloud($args->{'name_date'}, 'M') };
+}
+
+# Show female popularity of firstnames by quarter of a century
+sub _name_date_f
+{
+	my $self = shift;
+	my $args = shift;
+
+	return { name_date => create_cloud($args->{'name_date'}, 'F') };
 }
 
 # Show popularity of surnames by quarter of a century
@@ -1154,6 +1232,7 @@ sub _surname_date
 sub create_cloud
 {
 	my $db = shift;	# Which database to bring in
+	my $sex = shift;	# For firstname popularity
 
 	my @rc;
 
@@ -1161,7 +1240,12 @@ sub create_cloud
 	# The key (entry) is the yob / 25, so 60 = 1500, 80 = 2000, so this
 	#	loop displays the years 1500 to 2000
 	for(my $bucket = 60; $bucket <= 80; $bucket++) {
-		my @all = $db->selectall_hash({ entry => $bucket });
+		my @all;
+		if($sex) {
+			@all = $db->selectall_hash({ entry => $bucket, sex => $sex });
+		} else {
+			@all = $db->selectall_hash({ entry => $bucket });
+		}
 
 		# use Data::Dumper;
 		# print Data::Dumper->new([\$all])->Dump();
@@ -1170,9 +1254,14 @@ sub create_cloud
 		foreach my $name(@all) {
 			my $count = $name->{'count'};
 			if($count == 1) {
-				$cloud->add($name->{'name'}, "/cgi-bin/page.fcgi?page=people&entry=$name->{people}", 1);
-			} else {
+				# Go straight to the person
+				$cloud->add($name->{'name'}, "/cgi-bin/page.fcgi?page=people&amp;entry=$name->{people}", 1);
+			} elsif($sex) {
+				# First names - no links
 				$cloud->add_static($name->{'name'}, $count);
+			} else {
+				# Surnames - add links
+				$cloud->add($name->{'name'}, "/cgi-bin/page.fcgi?page=surnames&amp;surname=$name->{name}", $count);
 			}
 		}
 
@@ -1197,4 +1286,5 @@ sub _date_to_datetime
 
 	return $dfn->parse_datetime(string => $params{'date'});
 }
+
 1;

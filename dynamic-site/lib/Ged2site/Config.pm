@@ -1,134 +1,153 @@
 package Ged2site::Config;
 
-# Ged2site is licensed under GPL2.0 for personal use only
+=head1 NAME
+
+Ged2site::Config - Site-independent configuration file
+
+=head1 VERSION
+
+Version 0.01
+
+=cut
+
+our $VERSION = '0.01';
+
+# VWF is licensed under GPL2.0 for personal use only
 # njh@bandsman.co.uk
 
-# Site independent configuration file
-# Takes three optional arguments:
-#	info (CGI::Info object)
-#	logger
-#	default_config_directory - used when the configuration directory can't be worked out
-#	config (ref to hash to of values to override in the config file
-# Values in the file are overriden by what's in the environment
+# Usage is subject to licence terms.
+# The licence terms of this software are as follows:
+# Personal single user, single computer use: GPL2
+# All other users (including Commercial, Charity, Educational, Government)
+#	must apply in writing for a licence for use from Nigel Horne at the
+#	above e-mail.
 
 use warnings;
 use strict;
-use Config::Auto;
+use Config::Abstraction;
 use CGI::Info;
 use File::Spec;
 
-sub new {
+=head1 SUBROUTINES/METHODS
+
+=head2 new
+
+Takes four optional arguments:
+	info (CGI::Info object)
+	logger
+	config_directory - used when the configuration directory can't be worked out
+	config_file - name of the configuration file - otherwise determined dynamically
+	config (ref to hash of values to override in the config file
+
+Values in the file are overridden by what's in the environment
+
+=cut
+
+sub new
+{
 	my $proto = shift;
 	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
 	my $class = ref($proto) || $proto;
-
 	my $info = $args{info} || CGI::Info->new();
 
-	my $path;
+	if($args{'logger'}) {
+		$args{'logger'}->debug(__PACKAGE__, '->new()');
+	}
+
+	my @config_dirs;
 	if($ENV{'CONFIG_DIR'}) {
-		$path = $ENV{'CONFIG_DIR'};
+		@config_dirs = [$ENV{'CONFIG_DIR'}];
 	} else {
-		$path = File::Spec->catdir(
+		if($args{config_directory}) {
+			push(@config_dirs, $args{config_directory});
+		}
+		push(@config_dirs, File::Spec->catdir(
 				$info->script_dir(),
 				File::Spec->updir(),
 				File::Spec->updir(),
 				'conf'
-			);
+			), File::Spec->catdir(
+				$info->script_dir(),
+				File::Spec->updir(),
+				'conf'
+			)
+		);
+
+		if($ENV{'DOCUMENT_ROOT'}) {
+			push(@config_dirs, File::Spec->catdir(
+				$ENV{'DOCUMENT_ROOT'},
+				File::Spec->updir(),
+				'lib',
+				'conf'
+			))
+		}
+		if($ENV{'HOME'}) {
+			push(@config_dirs, File::Spec->catdir(
+				$ENV{'HOME'},
+				'lib',
+				'conf'
+			));
+		}
+	}
+
+	# Look for localised configurations
+	my $language;
+	if(my $lingua = $args{'lingua'}) {
+		$language = $lingua->language_code_alpha2();
+	}
+	$language ||= $info->lang();
+
+	if($language) {
+		@config_dirs = map {
+			($_, "$_/default", "$_/$language")
+		} @config_dirs;
+	} else {
+		@config_dirs = map {
+			($_, File::Spec->catdir($_, 'default'))
+		} @config_dirs;
+	}
+
+	if($args{'debug'}) {
+		# Not sure this really does anything
+		# $Config::Auto::Debug = 1;
+
 		if($args{logger}) {
-			$args{logger}->debug("Looking for configuration $path/", $info->domain_name());
-		}
-
-		if(!-d $path) {
-			$path = File::Spec->catdir(
-					$info->script_dir(),
-					File::Spec->updir(),
-					'conf'
-				);
-			if($args{logger}) {
-				$args{logger}->debug("Looking for configuration $path/", $info->domain_name());
-			}
-		}
-
-		if(!-d $path) {
-			if($ENV{'DOCUMENT_ROOT'}) {
-				$path = File::Spec->catdir(
-					$ENV{'DOCUMENT_ROOT'},
-					File::Spec->updir(),
-					'lib',
-					'conf'
-				);
-			} else {
-				$path = File::Spec->catdir(
-					$ENV{'HOME'},
-					'lib',
-					'conf'
-				);
-			}
-			if($args{logger}) {
-				$args{logger}->debug("Looking for configuration $path/", $info->domain_name());
-			}
-		}
-
-		if(!-d $path) {
-			if($args{default_config_directory}) {
-				$path = $args{default_config_directory};
-			} elsif($args{logger}) {
-				while(my ($key,$value) = each %ENV) {
+			while(my ($key,$value) = each %ENV) {
+				if($value) {
 					$args{logger}->debug("$key=$value");
 				}
 			}
 		}
-
-		if(my $lingua = $args{'lingua'}) {
-			my $language;
-			if(($language = $lingua->language_code_alpha2()) && (-d "$path/$language")) {
-				$path .= "/$language";
-			} elsif(-d "$path/default") {
-				$path .= '/default';
-			}
-		}
 	}
-	# if($args{'debug'}) {
-		# # Not sure this really does anything
-		# $Config::Auto::Debug = 1;
-	# }
-	my $config;
-	my $config_file;
-	eval {
-		$config_file = File::Spec->catdir($path, $info->domain_name());
-		if($args{logger}) {
-			$args{logger}->debug("Configuration path: $config_file");
-		}
-		if(-r $config_file) {
-			if($args{logger}) {
-				$args{logger}->debug("Found configuration in $config_file");
-			}
-			$config = Config::Auto::parse($config_file);
-		} elsif (-r File::Spec->catdir($path, 'default')) {
-			$config_file = File::Spec->catdir($path, 'default');
-			if($args{logger}) {
-				$args{logger}->debug("Found configuration in $config_file");
-			}
-			$config = Config::Auto::parse('default', path => $path);
-		} else {
-			die "no suitable config file found in $path";
-		}
-	};
+
+	my $config = Config::Abstraction->new(
+		config_dirs => \@config_dirs,
+		config_files => ['default', $info->domain_name(), $ENV{'CONFIG_FILE'}, $args{'config_file'}],
+		logger => $args{'logger'})->all();
 	if($@ || !defined($config)) {
-		throw Error::Simple("$config_file: configuration error: $@");
+		throw Error::Simple("Configuration error: $@");
 	}
 
-	# The values in config are defaults which can be overriden by
+	# The values in config are defaults which can be overridden by
 	# the values in args{config}
 	if(defined($args{'config'})) {
 		$config = { %{$config}, %{$args{'config'}} };
 	}
 
-	# Allow variables to be overriden by the environment
+	# Allow variables to be overridden by the environment
 	foreach my $key(keys %{$config}) {
-		if($ENV{$key}) {
-			$config->{$key} = $ENV{$key};
+		if(my $value = $ENV{$key}) {
+			if($args{'logger'}) {
+				$args{'logger'}->debug(__PACKAGE__, ': ', __LINE__, " overwriting $key, ", $config->{$key}, " with $value");
+			}
+			# If the value contains an equals make it into a hash value
+			if($value =~ /(.+)=(.+)/) {
+				delete $config->{$key} if(!ref($config->{$key}));
+				$config->{$key}{$1} = $2;
+			} else {
+				$config->{$key} = $value;
+			}
 		}
 	}
 
@@ -141,20 +160,27 @@ sub new {
 		}
 	}
 
-	unless($config->{'config_path'}) {
-		$config->{'config_path'} = File::Spec->catdir($path, $info->domain_name());
+	# unless($config->{'config_path'}) {
+		# $config->{'config_path'} = File::Spec->catdir($config_dir, $info->domain_name());
+	# }
+	if($args{'debug'} && $args{'logger'}) {
+		$args{'logger'}->debug(__PACKAGE__, '(', __LINE__, '): ', Data::Dumper->new([$config])->Dump());
 	}
 
 	return bless $config, $class;
 }
 
-sub AUTOLOAD {
+sub AUTOLOAD
+{
 	our $AUTOLOAD;
-	my $key = $AUTOLOAD;
+	my $self = shift;
 
-	$key =~ s{.*::}{};
+	return undef unless($self);
 
-	my $self = shift or return undef;
+	# Extract the method name from the AUTOLOAD variable
+	(my $key = $AUTOLOAD) =~ s/.*:://;
+
+	# Return the value of the corresponding hash key
 	return $self->{$key};
 }
 

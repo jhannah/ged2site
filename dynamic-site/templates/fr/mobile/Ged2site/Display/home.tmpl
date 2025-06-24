@@ -6,9 +6,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="/css/mobile.css" type="text/css" media="screen">
 		<title>[% SiteTitle.join(' ') %]</title>
-		<meta name="description" content="[% SiteTitle.join(' ') %] - A ged2site webpage">
+		<meta name="description" content="[% SiteTitle.join(' ') %] - Un site de Ged2Site">
 		<meta http-equiv="Content-Language" content="English">
-		<meta name="Copyright" content="Copyright (C) 2022 Nigel Horne">
+		<meta name="Copyright" content="Copyright (C) 2025 Nigel Horne">
 	</head>
 	<body>
 		<h1>[% SiteTitle.join(' ') %]</h1>
@@ -25,16 +25,20 @@
 				[% year = event.year %]
 			[% END %]
 			<p>
-				<a href="?page=people&amp;entry=[%- event.person %]">[% event.title %]</a>:
+				<a href="?page=people&amp;entry=[%- event.xref %]">[% event.title %]</a>:
 				[% IF event.event == 'Birth' %]
 					Naissance
 				[% ELSE %]
 					[% event.event %]
 				[% END %]
+				[% IF event.person.profile_thumbnail %]
+					<a href="?page=people&amp;entry=[%- event.xref %]">
+						<img src="/[% event.person.profile_thumbnail %]" alt="[% event.person.title %]" height="100" width = "70"></a>
+				[% END %]
 			</p>
 		[% END %]
 		<center><font size="+2">
-			[ <a href="?page=people&home=1">Home Person</a> ]<br>
+			[ <a href="?page=people&amp;home=1">Home Person</a> ]<br>
 			[ <a href="?page=censuses">Index des Recensements</a> ]<br>
 			[ <a href="?page=surnames">Surname Index</a> ]<br>
 			[ <a href="?page=history">Family History</a> ]<br>
@@ -42,7 +46,7 @@
 		</font></center>
 		<p>
 			<i>
-			Cette site web a &eacute;t&eacute; cr&eacute;&eacute; par <a href="https://github.com/nigelhorne/ged2site">ged2site</a>.
+			Cette site web a &eacute;t&eacute; cr&eacute;&eacute; par <a href="https://github.com/nigelhorne/ged2site">Ged2Site</a>.
 			[% IF updated %]
 				[% USE date %]
 				Derni&egrave;re modification le [% date.format(time = updated, format = '%d %b %Y', locale = lingua.language_code_alpha2) %]

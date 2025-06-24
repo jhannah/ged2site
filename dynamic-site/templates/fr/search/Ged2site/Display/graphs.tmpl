@@ -9,7 +9,7 @@
 		<meta name="object" content="Index">
 		<meta name="owner" content="Nigel Horne">
 		<meta name="Author" content="Nigel Horne">
-		<meta name="Copyright" content="Copyright (C) 2023 Nigel Horne, all rights reserved">
+		<meta name="Copyright" content="Copyright (C) 2025 Nigel Horne, all rights reserved">
 		[% IF graph == 'ageatdeath' %]
 			[% SET title = 'Adult Life Expectancy' %]
 		[% ELSIF graph == 'birthmonth' %]
@@ -38,19 +38,19 @@
 			[% SET title = 'How Family Size Changes over Time' %]
 		[% ELSIF graph == 'motherchildren' %]
 			[% SET title = 'Nombre des enfants par femmes' %]
+		[% ELSIF graph == 'birth_countries' %]
+			[% SET title = 'Pays de Naissance' %]
 		[% ELSE %]
 			[% SET title = 'Family Tree Analytics' %]
-		[% ELSIF graph == 'birth_countries' %]
-			[% SET title = 'Country of Birth' %]
 		[% END %]
 		<title>[% title %]</title>
-		<meta name="description" content="[% SiteTitle.join(' ') %] [% title %] - A ged2site webpage">
+		<meta name="description" content="[% SiteTitle.join(' ') %] [% title %] - A Ged2Site webpage">
 	</head>
 
 	<body>
 		<h1>[% title %]</h1>
 		<center>
-			[ <a href="?page=people&home=1">Acceuil</a> ]
+			[ <a href="?page=people&amp;home=1">Acceuil</a> ]
 			[ <a href="?page=censuses">Index des Recensements</a> ]
 			[ <a href="?page=surnames">Surname Index</a> ]
 			[ <a href="?page=history">Family History</a> ]
@@ -94,7 +94,7 @@
 			<p>People who moved much further away than most (tels l&eacute;migrants) are not included so that the graph more reflects the norm.</p>
 			<p>Select an area to zoom in.</p>
 		[% ELSIF graph == 'ageatfirstchild' || graph == 'ageatlastchild' %]
-			<p>This graph only includes data when the year of births of parents and children are known.</p>
+			<p>This graph, which shows the trend of generation gaps over the years, only includes data when the year of births of parents and children are known.</p>
 			<p>This graph only includes data from 5 year periods that contain at least 5 births.</p>
 		[% ELSIF graph == 'percentagedying' %]
 			<p>
@@ -126,7 +126,7 @@
 			<li><a href="?page=graphs&amp;graph=motherchildren">Number of children by women</a></li>
 		</ul>
 
-		Cette site web a &eacute;t&eacute; cr&eacute;&eacute; par <a href="//github.com/nigelhorne/ged2site">ged2site</a>.
+		Cette site web a &eacute;t&eacute; cr&eacute;&eacute; par <a href="//github.com/nigelhorne/ged2site">Ged2Site</a>.
 		[% IF updated %]
 			[% USE date %]
 			Derni&egrave;re modification le [% date.format(time = updated, format = '%d %b %Y', locale = lingua.language_code_alpha2) %]

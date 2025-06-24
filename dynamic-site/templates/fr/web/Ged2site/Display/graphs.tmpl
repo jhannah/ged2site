@@ -9,7 +9,7 @@
 		<meta name="object" content="Index">
 		<meta name="owner" content="Nigel Horne">
 		<meta name="Author" content="Nigel Horne">
-		<meta name="description" content="[% SiteTitle.join(' ') %] [% title %] - A ged2site webpage">
+		<meta name="description" content="[% SiteTitle.join(' ') %] [% title %] - A Ged2Site webpage">
 		<meta name="Copyright" content="Copyright (C) 2024 Nigel Horne">
 		[% IF graph == 'ageatdeath' %]
 			[% SET title = 'Adult Life Expectancy' %]
@@ -76,7 +76,8 @@
 			}
 		</style>
 		[% IF datapoints.M %]
-			<script src="//cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js"></script>
+			<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js"></script> -->
+			<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 			<script type="text/javascript">
 
 			window.onload = function () {
@@ -378,7 +379,7 @@
 				[% IF graph %]
 					[ <a href="?page=graphs">Analytics</a> ] |
 				[% END %]
-				[ <a href="?page=emmigrants">Emigr&eacute;s</a> ] |
+				[ <a href="?page=emigrants">Emigr&eacute;s</a> ] |
 				[ <a href="/visjs.html">L'axe Chronologique</a> ]
 			</center>
 			[% IF error %]
@@ -451,7 +452,7 @@
 			<p>Select an area to zoom in.</p>
 		[% ELSIF graph == 'ageatfirstchild' || graph == 'ageatlastchild' %]
 			<div id="chartContainer" style="height: 300px; width: 100%;"></div>
-			<p>This graph only includes data when the year of births of parents and children are known.</p>
+			<p>This graph, which shows the trend of generation gaps over the years, only includes data when the year of births of parents and children are known.</p>
 			<p>This graph only includes data from 5 year periods that contain at least 5 births.</p>
 		[% ELSIF graph == 'percentagedying' %]
 			<div id="chartContainerM" style="height: 300px; width: 100%;"></div>
@@ -488,7 +489,7 @@
 					[% IF graph %]
 						[ <a href="?page=graphs">Analytics</a> ] |
 					[% END %]
-					[ <a href="?page=emmigrants">Emigrants</a> ] |
+					[ <a href="?page=emigrants">Emigrants</a> ] |
 					[ <a href="/visjs.html">Timeline</a> ]
 				</center>
 				[% FOREACH year IN name_date %]
@@ -513,7 +514,7 @@
 					[% IF graph %]
 						[ <a href="?page=graphs">Analytics</a> ] |
 					[% END %]
-					[ <a href="?page=emmigrants">Emigrants</a> ] |
+					[ <a href="?page=emigrants">Emigrants</a> ] |
 					[ <a href="/visjs.html">Timeline</a> ]
 				</center>
 				[% FOREACH year IN surname_date %]
@@ -549,7 +550,7 @@
 
 		<p align="right">
 			<i>
-			Cette site web a &eacute;t&eacute; cr&eacute;&eacute; par <a href="//github.com/nigelhorne/ged2site">ged2site</a>.
+			Cette site web a &eacute;t&eacute; cr&eacute;&eacute; par <a href="//github.com/nigelhorne/ged2site">Ged2Site</a>.
 			[% IF updated %]
 				[% USE date %]
 				Derni&egrave;re modification le [% date.format(time = updated, format = '%d %b %Y', locale = lingua.language_code_alpha2) %]

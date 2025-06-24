@@ -1,4 +1,5 @@
-<!DOCTYPE HTML>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en" dir="ltr">
 	<head>
 		[% IF graph == 'ageatdeath' %]
@@ -33,9 +34,14 @@
 			[% SET title = 'Percentage of people alive who died' %]
 		[% ELSIF graph == 'birth_countries' %]
 			[% SET title = 'Country of Birth' %]
-		[% ELSIF graph == 'name_date' %]
+		[% ELSIF graph == 'death_countries' %]
+			[% SET title = 'Country of Death' %]
+		[% ELSIF graph == 'name_date_m' %]
 			<link rel="stylesheet" href="/css/web.css" type="text/css" media="screen">
-			[% SET title = 'First Name Popularity' %]
+			[% SET title = 'Male First Name Popularity' %]
+		[% ELSIF graph == 'name_date_f' %]
+			<link rel="stylesheet" href="/css/web.css" type="text/css" media="screen">
+			[% SET title = 'Female First Name Popularity' %]
 		[% ELSIF graph == 'surname_date' %]
 			<link rel="stylesheet" href="/css/web.css" type="text/css" media="screen">
 			[% SET title = 'Surname Popularity' %]
@@ -51,7 +57,7 @@
 		<!--
 			<meta http-equiv="Content-Language" content="English">
 		-->
-		<meta name="description" content="[% SiteTitle.join(' ') %] [% title %] - A ged2site webpage">
+		<meta name="description" content="[% SiteTitle.join(' ') %] [% title %] - A Ged2Site webpage">
 		<meta name="Copyright" content="Copyright (C) 2024 Nigel Horne">
 		<style type="text/css">
 			/* Two columns */
@@ -67,9 +73,8 @@
 				clear: both;
 			}
 		</style>
-		</head>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js"></script>
-		<!-- <script type="text/javascript" src="https://cdn.canvasjs.com/canvasjs.min.js"></script> -->
+		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js"></script> -->
+		<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 		[% IF datapoints.M %]
 			<script type="text/javascript">
 
@@ -231,9 +236,9 @@
 						[% IF graph == 'dist' %]
 							title: '[% units %]',
 						[% ELSIF graph == 'familysizetime' %]
-							title: "Number of Children",
+							title: "Zahl der Kinder",
 						[% ELSIF graph == 'motherchildren' %]
-							title: "Number of Mothers",
+							title: "Zahl der M&uuml;tter",
 							includeZero: false,
 						[% ELSIF graph == 'infantdeaths' %]
 							title: 'Percentage',
@@ -258,7 +263,7 @@
 						},
 					[% ELSIF graph == 'motherchildren' %]
 						axisX: {
-							title: "Number of Children",
+							title: "Zahl der Kinder",
 						},
 					[% END %]
 					animationEnabled: true,	// change to false
@@ -383,18 +388,18 @@
 	</head>
 
 	<body>
-		[% UNLESS name_date || surname_date  %]
+		[% UNLESS name_date || surname_date %]
 			<center>
 				[ <a href="?page=people&amp;home=1">Home</a> ] |
 				[ <a href="?page=censuses">Census Index</a> ] |
 				[ <a href="?page=surnames">Surname Index</a> ] |
 				[ <a href="?page=history">Family History</a> ] |
-				[ <a href="?page=todo">To Do</a> ] |
-				[ <a href="?page=calendar">Calendar</a> ] |
+				[ <a href="?page=todo">Aufgabe</a> ] |
+				[ <a href="?page=calendar">Kalendar</a> ] |
 				[% IF graph %]
 					[ <a href="?page=graphs">Analytics</a> ] |
 				[% END %]
-				[ <a href="?page=emmigrants">Emigrants</a> ] |
+				[ <a href="?page=emigrants">Auswanderung</a> ] |
 				[ <a href="/visjs.html">Timeline</a> ]
 			</center>
 			[% IF error %]
@@ -467,7 +472,7 @@
 			<p>Select an area to zoom in.</p>
 		[% ELSIF graph == 'ageatfirstchild' || graph == 'ageatlastchild' %]
 			<div id="chartContainer" style="height: 300px; width: 100%;"></div>
-			<p>This graph only includes data when the year of births of parents and children are known.</p>
+			<p>This graph, which shows the trend of generation gaps over the years, only includes data when the year of births of parents and children are known.</p>
 			<p>This graph only includes data from 5 year periods that contain at least 5 births.</p>
 		[% ELSIF graph == 'percentagedying' %]
 			<div id="chartContainerM" style="height: 300px; width: 100%;"></div>
@@ -487,11 +492,15 @@
 			<p>
 			<div id="chartContainerM" style="height: 300px; width: 100%;"></div>
 			<div id="chartContainerF" style="height: 300px; width: 100%;"></div>
-		[% ELSIF name_date %]
+		[% ELSIF graph == 'death_countries' %]
+			<p>
+				Shows the countries of death on both sides of the family of all adults in the tree.
+			<p>
+			<div id="chartContainerM" style="height: 300px; width: 100%;"></div>
+			<div id="chartContainerF" style="height: 300px; width: 100%;"></div>
+		[% ELSIF graph == 'name_date_m' || graph == 'name_date_f' %]
 			<div id="header_container">
-				<center>
-					<h1>First Name Popularity</h1>
-				</center>
+				<center>[% title %]</center>
 			</div>
 			<div id="container">
 				<center>
@@ -500,11 +509,11 @@
 					[ <a href="?page=surnames">Surname Index</a> ] |
 					[ <a href="?page=history">Family History</a> ] |
 					[ <a href="?page=todo">To Do</a> ] |
-					[ <a href="?page=calendar">Calendar</a> ] |
+					[ <a href="?page=calendar">Kalendar</a> ] |
 					[% IF graph %]
 						[ <a href="?page=graphs">Analytics</a> ] |
 					[% END %]
-					[ <a href="?page=emmigrants">Emigrants</a> ] |
+					[ <a href="?page=emigrants">Auswanderung</a> ] |
 					[ <a href="/visjs.html">Timeline</a> ]
 				</center>
 				[% FOREACH year IN name_date %]
@@ -525,11 +534,11 @@
 					[ <a href="?page=surnames">Surname Index</a> ] |
 					[ <a href="?page=history">Family History</a> ] |
 					[ <a href="?page=todo">To Do</a> ] |
-					[ <a href="?page=calendar">Calendar</a> ] |
+					[ <a href="?page=calendar">Kalendar</a> ] |
 					[% IF graph %]
 						[ <a href="?page=graphs">Analytics</a> ] |
 					[% END %]
-					[ <a href="?page=emmigrants">Emigrants</a> ] |
+					[ <a href="?page=emigrants">Auswanderung</a> ] |
 					[ <a href="/visjs.html">Timeline</a> ]
 				</center>
 				[% FOREACH year IN surname_date %]
@@ -538,8 +547,13 @@
 				[% END %]
 			</div>
 		[% ELSE %]
+			<div id="header_container">
+				<center>
+					<h1>Analytics for [% SiteTitle.join(' ') %]</h1>
+				</center>
+			</div>
 			<div id="container">
-				<h2>Choose a Graph</h2>
+				<h1>Choose a Graph</h1>
 				<br>
 				<ul id="nav">
 					<li><a href="?page=graphs&amp;graph=birthmonth">Month of birth</a></li>
@@ -557,16 +571,18 @@
 					<li><a href="?page=graphs&amp;graph=familysizetime">How family size changes over time</a></li>
 					<li><a href="?page=graphs&amp;graph=motherchildren">Number of children by women</a></li>
 					<li><a href="?page=graphs&amp;graph=percentagedying">Percentage of the people dying</a></li>
-					<li><a href="?page=graphs&amp;graph=name_date">First Name Popularity</a></li>
+					<li><a href="?page=graphs&amp;graph=name_date_m">Male First Name Popularity</a></li>
+					<li><a href="?page=graphs&amp;graph=name_date_f">Female First Name Popularity</a></li>
 					<li><a href="?page=graphs&amp;graph=surname_date">Surname Popularity</a></li>
 					<li><a href="?page=graphs&amp;graph=birth_countries">Country of Birth</a></li>
+					<li><a href="?page=graphs&amp;graph=death_countries">Country of Death</a></li>
 				</ul>
 			</div>
 		[% END %]
 
 		<p align="right">
 			<i>
-			<a href="https://github.com/nigelhorne/ged2site">Ged2site</a> hat diese Internetseite erstellt.
+			<a href="https://github.com/nigelhorne/ged2site">Ged2Site</a> hat diese Internetseite erstellt.
 			[% IF updated %]
 				[% USE date %]
 				Last updated on [% date.format(time = updated, format = '%d %b %Y', locale = lingua.language_code_alpha2) %]

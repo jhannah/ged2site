@@ -7,7 +7,7 @@
 			<meta http-equiv="Content-Language" content="English">
 		-->
 		<link rel="stylesheet" href="/css/web.css" type="text/css" media="screen">
-		<meta name="Copyright" content="Copyright (C) 2024 Nigel Horne">
+		<meta name="Copyright" content="Copyright (C) 2025 Nigel Horne">
 		[% USE Math %]
 	</head>
 	<body>
@@ -32,23 +32,28 @@
 			[% IF facts %]
 				<ul>
 					<li>
-						There are [% facts.count %] people in the tree,
-						of which [% facts.sex.M %] are male and [% facts.sex.F %] are female.
+						There are [% facts.number_of_individuals %] people in the tree,
+						of which [% facts.sex.M %] are male and [% facts.sex.F %] are female
 						[% IF facts.sex.U %]
-							There are also [% facts.sex.U %] people for which the sex is unknown.
+							. There are also [% facts.sex.U %] people for which the sex is unknown
 						[% END %]
 					</li>
+					[% IF facts.number_of_families %]
+						<li>
+							There are [% facts.number_of_families %] families in the tree
+						</li>
+					[% END %]
 					[% IF facts.fathers_side %]
 						<li>
-							There are [% facts.fathers_side.count %] adults aged 20 or over on the father's side,
-							of which the average (mean) age at death was [% Math.int(facts.fathers_side.age / facts.fathers_side.count) %].
+							There are [% facts.fathers_side.count %] adults known to have lived to 20 or over on the father's side,
+							of which the average (mean) age at death was [% Math.int(facts.fathers_side.age / facts.fathers_side.count) %]
 						</li>
-					[% END %]               
+					[% END %]
 					[% IF facts.mothers_side %]
-						<li>     
-							There are [% facts.mothers_side.count %] adults aged 20 or over on the mother's side,
-							of which the average (mean) age at death was [% Math.int(facts.mothers_side.age / facts.mothers_side.count) %].
-						</li>                    
+						<li>
+							There are [% facts.mothers_side.count %] adults known to have lived to 20 or over on the mother's side,
+							of which the average (mean) age at death was [% Math.int(facts.mothers_side.age / facts.mothers_side.count) %]
+						</li>
 					[% END %]
 					[% IF facts.first_birth %]
 						<li>
@@ -59,7 +64,89 @@
 					[% IF facts.oldest_age %]
 						<li>
 							Person who lived the longest:
-							<a href="?page=people&amp;entry=[%- facts.oldest_age.person.entry %]">[% facts.oldest_age.person.title %]</a> who lived for [% facts.oldest_age.years %] years
+							<a href="?page=people&amp;entry=[%- facts.oldest_age.person.entry %]">[% facts.oldest_age.person.title %]</a> who lived for
+							[% facts.oldest_age.years %] years
+							[% facts.oldest_age.months %], months
+							and
+							[% facts.oldest_age.days %] days
+						</li>
+					[% END %]
+					[% IF facts.most_children %]
+						<li>
+							Person with the most children:
+							<a href="?page=people&amp;entry=[%- facts.most_children.person.entry %]">[% facts.most_children.person.title %]</a> had [% facts.most_children.count %] children
+						</li>
+					[% END %]
+					[% IF facts.both_sides %]
+						<li>
+							There
+							[% IF facts.both_sides.count == 1 %]
+								is 1 person who appears
+							[% ELSE %]
+								are [% facts.both_sides.count %] people who appear
+							[% END %]
+							on both the father's and mother's side of the tree:
+							<ul>
+								[% FOREACH person IN facts.both_sides.people %]
+									<li>
+										<a href="?page=people&amp;entry=[%- person.entry %]">[% person.title %]</a>
+									</li>
+								[% END %]
+							</ul>
+						</li>
+					[% END %]
+					[% IF facts.family_size %]
+						<li>
+							The mean family size is [% facts.family_size.mean %] children
+						</li>
+					[% END %]
+					[% IF facts.youngest_marriage %]
+						<li>
+							The person who married at the youngest age was
+							<a href="?page=people&amp;entry=[%- facts.youngest_marriage.person.entry %]">[% facts.youngest_marriage.person.title %]</a>,
+							aged
+							[% facts.youngest_marriage.years %] years,
+							[% facts.youngest_marriage.months %] months and
+							[% facts.youngest_marriage.days %] days
+						</li>
+					[% END %]
+					[% IF facts.oldest_marriage %]
+						<li>
+							The person who married at the oldest age was
+							<a href="?page=people&amp;entry=[%- facts.oldest_marriage.person.entry %]">[% facts.oldest_marriage.person.title %]</a>,
+							aged
+							[% facts.oldest_marriage.years %] years,
+							[% facts.oldest_marriage.months %] months and
+							[% facts.oldest_marriage.days %] days
+						</li>
+					[% END %]
+					[% IF facts.longest_marriage %]
+						<li>
+							The longest marriage,
+							<a href="?page=people&amp;entry=[%- facts.longest_marriage.person.entry %]">[% facts.longest_marriage.person.title %]</a>
+							to
+							<a href="?page=people&amp;entry=[%- facts.longest_marriage.spouse.entry %]">[% facts.longest_marriage.spouse.title %]</a>,
+							lasted
+							[% facts.longest_marriage.years %] years,
+							[% facts.longest_marriage.months %] months and
+							[% facts.longest_marriage.days %] days
+						</li>
+					[% END %]
+					[% IF facts.people_over_100 %]
+						<li>
+							There
+							[% IF facts.people_over_100.count == 1 %]
+								is 1 person who was over 100 when they died
+							[% ELSE %]
+								are [% facts.people_over_100.count %] people who were over 100 when they died
+							[% END %]
+							<ul>
+								[% FOREACH person IN facts.people_over_100.people %]
+									<li>
+										<a href="?page=people&amp;entry=[%- person.entry %]">[% person.title %]</a>
+									</li>
+								[% END %]
+							</ul>
 						</li>
 					[% END %]
 				</ul>
@@ -67,7 +154,7 @@
 		</div>
 		<p align="right">
 			<i>
-			Generated by <a href="https://github.com/nigelhorne/ged2site">ged2site</a>.
+			Generated by <a href="https://github.com/nigelhorne/ged2site">Ged2Site</a>.
 			[% IF updated %]
 				[% USE date %]
 				Last updated on [% date.format(time = updated, format = '%d %b %Y', locale = lingua.language_code_alpha2) %]

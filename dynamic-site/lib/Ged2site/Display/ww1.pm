@@ -1,9 +1,6 @@
 package Ged2site::Display::ww1;
 
 # Display the First World War page
-# FIXME:  This is slow because of the reverse_geocode calls.  Would be better to use the original
-#	data, but that can't always be trusted to be of normalised form.  Need to find a way of
-#	speeding this up.
 
 use warnings;
 use strict;
@@ -51,14 +48,21 @@ sub html {
 		next if($yod > 1918);
 
 		my $dcountry = $person->{'death_country'};
-		next unless($dcountry);
+		if(!defined($dcountry)) {
+			if($person->{'bio'} =~ /In (\d{4}) s?he was serving in the military/i) {
+				next if(($1 < 1914) || ($1 > 1918));
+				# Died in an unknown country while serving in the military during the First World War
+				push @wardead, $person;
+			}
+			next;
+		}
 		if(length($dcountry) > 2) {
 			$dcountry = lc(country2code($dcountry));
 		}
 
-		next unless(($dcountry eq 'be') || ($dcountry eq 'fr') || ($dcountry eq 'nl'));
-
-		push @wardead, $person;
+		if(($dcountry eq 'be') || ($dcountry eq 'fr') || ($dcountry eq 'nl') || ($dcountry eq 'de') || ($dcountry eq 'it')) {
+			push @wardead, $person;
+		}
 	}
 
 	@wardead = sort { $a->{'title'} cmp $b->{'title'} } @wardead;

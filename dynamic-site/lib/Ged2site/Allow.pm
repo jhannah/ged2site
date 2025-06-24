@@ -19,24 +19,10 @@ use Error;
 
 use constant DSHIELD => 'https://secure.dshield.org/api/sources/attacks/100/2012-03-08';
 
-our %blacklist_countries = (
-	'BY' => 1,
-	'MD' => 1,
-	'RU' => 1,
-	'CN' => 1,
-	'BR' => 1,
-	'UY' => 1,
-	'TR' => 1,
-	'MA' => 1,
-	'VE' => 1,
-	'SA' => 1,
-	'CY' => 1,
-	'CO' => 1,
-	'MX' => 1,
-	'IN' => 1,
-	'RS' => 1,
-	'PK' => 1,
-	'UA' => 1,
+# TODO: Remove code duplicated with CGI::Allow
+# Blacklist of country codes (hardcoded for now)
+my %blacklist = map { $_ => 1 } qw(
+	BG BR CN CO CY IN IR KR LT MA MD MX PK RS RU SA TR TW UY VE VN ZA
 );
 
 our %blacklist_agents = (
@@ -151,11 +137,12 @@ sub allow {
 
 				my $ids = CGI::IDS->new();
 				$ids->set_scan_keys(scan_keys => 1);
+				delete($params->{'fbclid'});    # Facebook key is OK
 				my $impact = $ids->detect_attacks(request => $params);
 				if($impact > 0) {
 					if($logger) {
 						$logger->warn("$addr: IDS blocked connexion for ", $info->as_string(), " impact = $impact");
-						$logger->warn(Data::Dumper->new([$ids->get_attacks()]));
+						$logger->warn(Data::Dumper->new([$ids->get_attacks()])->Dump());
 					}
 					if($impact > 30) {
 						$status{$addr} = 0;
