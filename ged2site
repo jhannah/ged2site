@@ -2332,6 +2332,7 @@ sub print_person
 
 	my $filename = File::Spec->catfile('static-site', 'index.html');
 	if($me && ($person->xref() eq $me->xref())) {
+		print "JAY1 opening index.html for write ($name|" . $person->xref() . ")\n";
 		open(my $index_html, '>', $filename);
 		print $index_html '<html>';
 		my $name = wide_to_html($person->as_string(nee => 1));
@@ -2353,6 +2354,7 @@ sub print_person
 		chmod 0444, $filename;
 	} else {
 		if(!-e $filename) {
+			print "JAY2 opening index.html for write ($name|" . $person->xref() . ")\n";
 			open(my $index_html, '>', $filename);
 			print $index_html '<html>',
 				"<head><title>The Family Tree $name</title>",
