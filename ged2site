@@ -1229,7 +1229,7 @@ my $people_json;
 if($me && (open($people_json, '>', 'dynamic-site/data/people.json'))) {
 	print "Creating JSON tree\n";
 	my $structure = individual_to_hash($me);
-	print $people_json JSON::MaybeXS::to_json($structure, { pretty => 1 });
+	print $people_json JSON::MaybeXS::to_json($structure, { pretty => 1, canonical => 1 });
 	link 'dynamic-site/data/people.json', 'static-site/people.json';
 }
 
@@ -2424,7 +2424,7 @@ sub print_person
 		}
 	}
 	print $html '<script type="application/ld+json">',
-		JSON::MaybeXS::to_json($schema),
+		JSON::MaybeXS::to_json($schema, { canonical => 1 }),
 		'</script>';
 
 	print $html '</head>';
