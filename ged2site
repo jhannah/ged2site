@@ -2385,29 +2385,50 @@ sub print_person
 		print $html '<link rel="stylesheet" href="https://genealogy.nigelhorne.com/css/web.css" type="text/css" media="screen">';
 	}
 
-	my $dob = $dateofbirth;
-	if(defined($dob) && ($dob =~ /^(\d{1,2})\s(\w{3})\s(\d{4})$/)) {
-		my $month = $months{lc($2)};
-		if($month <= 9) {
-			$month = "0$month";
+	# Produce the code for schema.org
+	my $schema = {
+		'@context' => 'https://schema.org',
+		'@type' => 'Person',
+		'name' => $name,
+		'gender' => $person->sex()
+	};
+
+	if(my $dob = $dateofbirth) {
+		if($dob =~ /^(\d{1,2})\s(\w{3})\s(\d{4})$/) {
+			my $month = $months{lc($2)};
+			if($month <= 9) {
+				$month = "0$month";
+			}
+			my $day = $1;
+			my $year = $3;
+			if($day =~ /^\d$/) {
+				$day = "0$day";
+			}
+			$dob = "$year-$month-$day";
+			$schema->{'birthDate'} = $dob;
+		} elsif($dob =~ /^(\d{4})\s(\w{3})\s(\d{1,2})$/) {
+			my $month = $months{lc($2)};
+			if($month <= 9) {
+				$month = "0$month";
+			}
+			my $year = $1;
+			my $day = $3;
+			if($day =~ /^\d$/) {
+				$day = "0$day";
+			}
+			$dob = "$year-$month-$day";
+			$schema->{'birthDate'} = $dob;
+		} elsif($dob !~ /^abt/i) {
+			complain({ person => $person, warning => "Invalid date format for date of birth: '$dob'" });
+			# $schema->{'birthDate'} = $dob;
 		}
-		my $day = $1;
-		if($day <= 9) {
-			$day = "0$day";
-		}
-		$dob = "$3-$month-$day";
 	}
 	print $html '<script type="application/ld+json">',
-		JSON::MaybeXS::to_json({
-			'@context' => 'https://schema.org',
-			'@type' => 'Person',
-			'name' => $name,
-			'gender' => $person->sex(),
-			'birthDate' => $dob
-		}),
+		JSON::MaybeXS::to_json($schema),
 		'</script>';
 
 	print $html '</head>';
+
 	if($opts{'m'}) {
 		if($maps_module eq 'HTML::GoogleMaps::V3') {
 			print $html "<body onload=\"html_googlemaps_initialize()\">";
@@ -4356,10 +4377,12 @@ sub print_person
 						}
 						if($opts{'w'} && $yob && (my $cdob = dateofbirth($child))) {
 							my $age = get_year_from_date($cdob) - $yob;
-							if($age < 0) {
-								complain({ person => $person, warning => 'Child ' . $child->as_string() . " $cdob which is before date of birth of $yob" });
-							} elsif($age <= 14) {
-								complain({ person => $person, warning => "Only $age years old at time of birth of their child " . $child->as_string() });
+							if($age <= 14) {
+								if($age < 0) {
+									complain({ person => $person, warning => 'Child ' . $child->as_string() . " $cdob which is before date of birth of $yob" });
+								} else {
+									complain({ person => $person, warning => "Only $age years old at time of birth of their child " . $child->as_string() });
+								}
 							}
 						}
 					}
@@ -8869,7 +8892,12 @@ sub print_person
 				$bio .= '.</p><p>';
 
 				push @phrases, $phrase;
-				$bio_dt->append(conjunction(map { $_->as_string() } @phrases))->append('.</p><p>');
+				my $str = conjunction(map { $_->as_string() } @phrases);
+				$bio_dt->append($str)->trim();
+				if($str !~ /\.\s+$/) {
+					$bio_dt->append('.');
+				}
+				$bio_dt->append('</p><p>');
 				$phrase = Data::Text->new();
 				@phrases = ();
 			}
@@ -8888,8 +8916,8 @@ sub print_person
 	if(scalar(@phrases)) {
 		# GitHub#127 - Don't put consecutive periods when a county ends with one, e.g. 'Los Angeles Co.'
 		my $str = conjunction(map { $_->as_string() } @phrases);
-		$bio_dt->append($str);
-		if($str !~ /\.$/) {
+		$bio_dt->append($str)->trim();
+		if($str !~ /\.\s*$/) {
 			$bio_dt->append('.');
 		}
 		$phrase = undef;
@@ -14366,6 +14394,64 @@ sub datecmp($$)
 				complain("the years are the same '$left'");
 			}
 			$left = $start
+		} elsif(($left =~ /^(\d{3,4})\-(\d{3,4})$/) || ($left =~ /^Bet (\d{3,4})\sand\s(\d{3,4})$/i)) {
+			# Comparing with a date range, e.g. "BET 1830 AND 1832 <=> 1830-02-06"
+			my ($from, $to) = ($1, $2);
+			if($from == $to) {
+				complain("from == to, $from");
+				$left = $from;
+			} elsif($from > $to) {
+				print STDERR "datecmp(): $from > $to in daterange '$left'\n";
+				my $i = 0;
+				while((my @call_details = caller($i++))) {
+					print STDERR "\t", colored($call_details[2] . ' of ' . $call_details[1], 'red'), "\n";
+				}
+				return 0;
+			} else {
+				if(ref($right)) {
+					$right = $right->year();
+				} else {
+					my @r = $dfg->parse_datetime({ date => $right, quiet => 1 });
+					if(!defined($r[0])) {
+						if($right =~ /[\s\/](\d{4})$/) {
+							# e.g. cmp "1891 <=> Oct/Nov/Dec 1892"
+							# or 5/27/1872
+							my $year = $1;
+							if(ref($left)) {
+								if($left->year() != $year) {
+									return $left->year() <=> $year;
+								}
+							} else {
+								if($left != $year) {
+									return $left <=> $year;
+								}
+							}
+						}
+						# TODO: throw an error that we can catch
+						my $i = 0;
+						while((my @call_details = caller($i++))) {
+							print STDERR "\t", colored($call_details[2] . ' of ' . $call_details[1], 'red'), "\n";
+						}
+						die "Date parse failure: right = '$right' ($left <=> $right)";
+					}
+					$right = $r[0]->year();
+				}
+				if($right < $from) {
+					return -1;
+				}
+				if($right > $to) {
+					return 1;
+				}
+				if($right == $from) {
+					return 0;
+				}
+				print STDERR "datecmp(): Can't compare $left with $right\n";
+				my $i = 0;
+				while((my @call_details = caller($i++))) {
+					print STDERR "\t", colored($call_details[2] . ' of ' . $call_details[1], 'red'), "\n";
+				}
+				return 0;
+			}
 		} elsif($left !~ /^\d{3,4}$/) {
 			if($left =~ /^\d{4}\-\d{2}\-\d{2}$/) {
 				# e.g. 1941-08-02
@@ -14440,6 +14526,9 @@ sub datecmp($$)
 				}
 				if($left > $to) {
 					return 1;
+				}
+				if($left == $from) {
+					return 0;
 				}
 				print STDERR "datecmp(): Can't compare $left with $right\n";
 				my $i = 0;
